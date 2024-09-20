@@ -1,0 +1,2 @@
+#flake8>=3.9.2,<3.10 #this gets the latest patch version for bug/security fixes without going to the next version
+flake8

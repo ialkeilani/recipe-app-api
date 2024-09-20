@@ -1,0 +1,20 @@
+# version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+
+    # this over-rides any default command specified in a 'CMD' instruction in the image Dockerfile
+    command: > 
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+
+# "docker-compose" is replaced by "docker compose" which is made available via "docker-compose-plugin" package that gets bundled with Docker Desktop.
+# build image using this command (after cd'ing into the project's root dir):
+#   docker compose build
