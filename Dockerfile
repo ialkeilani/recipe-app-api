@@ -13,13 +13,30 @@ EXPOSE 8000
 ARG DEV=false
 
 # using the '&&' helps avoid having multiple layers on the image and thus keeps it more light-weight, since technically all the commands chained by '&&' are treated as a single command
+# "--virtual .tmp-build-deps" option groups installed packages under the provided name so they can be later removed from the docker image using that name
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
+
+#     apk add --update --no-cache postgres-client && \
+#     apk add --update --no-cache --virtual .tmp-build-deps \
+#         build-base postgresql-dev musl-dev && \
+    apt update && \
+    apt install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev && \
+
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = 'true' ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
     fi && \
-    rm -rf /tmp && \
+
+#     rm -rf /tmp && \
+    rm -rf /var/lib/apt/lists/* /tmp && \
+
+#     apk del .tmp-build-deps && \
+#     apt remove --purge -y build-essential libpq-dev && \
+
     adduser \
         --disabled-password \
         --no-create-home \
@@ -41,5 +58,5 @@ CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 # other useful options:
 #   -d: Run the container in detached mode (in the background)
 #   --name mycontainer: Give the container a specific name
-
-
+#   --no-cache:        force Docker to pull fresh dependencies
+#   --progress=plain   verbose mode for troubleshooting

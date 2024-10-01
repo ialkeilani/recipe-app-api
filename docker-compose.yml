@@ -1,7 +1,8 @@
 # version: "3.9"
 
 services:
-  app:
+  app: #name of service. each docker compose 'service' represents a container
+    #my understanding is each service/container can be built from a dockerfile (like what we have specified immediately below for this 'app' service using the 'build' instruction, or can be based off a pre-existing image like we have done in the 'db' service below using the 'image' instruction
     build:
       context: .
       args:
@@ -14,11 +15,37 @@ services:
     # this over-rides any default command specified in a 'CMD' instruction in the image Dockerfile
     command: > 
       sh -c "python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=db #the variable name is set to 'db' which is the name of the database service below
+      # The values for database name, user and password below match what we have defined under the database service below:
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      - db #this instructs docker to start the 'db' service before starting this 'app' service
+
+  db:
+    #image:postgres:13-alpine
+    image: postgres
+    volumes:
+      - dev-db-data:/var/lib/postgresql/
+    environment: #below variables are used to configure database for running locally NOT IN PRODUCTION, hence the loose way for creating and storing the username/password
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
+
+volumes:
+  dev-db-data:
 
 # "docker-compose" is replaced by "docker compose" which is made available via "docker-compose-plugin" package that gets bundled with Docker Desktop.
 
+
 # build image using this command (after cd'ing into the project's root dir):
 #   docker compose build
+# helpful options
+#  --no-cache:        force Docker to pull fresh dependencies
+#  --progress=plain   verbose mode for troubleshooting
+
 
 #run the server using:
 #  docker compose up
